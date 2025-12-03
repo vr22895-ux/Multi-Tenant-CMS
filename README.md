@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 Multi-Tenant Headless CMS
 
-## Getting Started
+A high-performance, scalable Content Management System built with **Next.js 15**, **Supabase**, and **On-Demand ISR**.
 
-First, run the development server:
+This project demonstrates a "Hub and Spoke" architecture where a single **Admin Dashboard** manages content for multiple, isolated **Client Sites**.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 🌟 Key Features
+
+### 🏢 Multi-Tenancy
+-   **Single Database**: All data lives in one Supabase instance, logically separated by `company_id`.
+-   **Isolated Frontends**: Each client site is a separate deployment that only fetches its own data.
+-   **Scalable**: Add new tenants instantly without changing the database schema.
+
+### ⚡ Performance (ISR)
+-   **Static Speed**: All blog pages are pre-rendered as static HTML (0ms TTFB).
+-   **Dynamic Updates**: When you publish a post, the Admin Dashboard triggers a webhook to rebuild *only* that specific page instantly.
+-   **No Stale Content**: Users always see the latest version without waiting for a full site rebuild.
+
+### 🛡️ Security
+-   **Admin Authentication**: Password-protected dashboard with HTTP-Only cookies.
+-   **Secure Webhooks**: Revalidation endpoints are protected by a shared secret token.
+-   **Middleware**: Route protection ensures unauthorized users cannot access the admin panel.
+
+---
+
+## 🛠️ Tech Stack
+
+-   **Frontend**: Next.js 15 (App Router), Tailwind CSS
+-   **Backend**: Next.js Server Actions
+-   **Database**: Supabase (PostgreSQL)
+-   **Deployment**: Vercel (Edge Network)
+
+---
+
+## 📂 Project Structure
+
+This monorepo contains two main applications:
+
+1.  **`cms-task` (Root)**: The Admin Dashboard.
+    *   `src/app`: Dashboard pages and Server Actions.
+    *   `src/components`: UI components (Company Registration, Post Editor).
+2.  **`client-site` (Folder)**: The Template for Client Websites.
+    *   `src/app/blog/[slug]`: Dynamic blog post pages.
+    *   `src/app/api/revalidate`: The ISR webhook endpoint.
+
+---
+
+## 🚀 Getting Started
+
+### 1. Prerequisites
+-   Node.js 18+
+-   A Supabase account
+
+### 2. Environment Setup
+Create a `.env.local` file in the root directory:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+ADMIN_PASSWORD=admin123
+REVALIDATION_SECRET=super_secure_token_123
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Run the Admin Dashboard
+```bash
+npm install
+npm run dev
+# Runs on http://localhost:3000
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Run a Client Site
+Open a new terminal:
+```bash
+cd client-site
+npm install
+# Create .env.local here too with the same variables + NEXT_PUBLIC_COMPANY_ID
+npm run dev
+# Runs on http://localhost:3001
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🤝 Contributing
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1.  Fork the repo
+2.  Create your feature branch (`git checkout -b feature/amazing-feature`)
+3.  Commit your changes (`git commit -m 'Add some amazing feature'`)
+4.  Push to the branch (`git push origin feature/amazing-feature`)
+5.  Open a Pull Request

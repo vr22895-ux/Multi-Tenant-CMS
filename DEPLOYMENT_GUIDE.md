@@ -28,13 +28,15 @@ This is the "Multi-Tenant" magic. You will deploy the **same codebase** multiple
 
 ### Example: Deploying "TechCorp"
 1.  Go to Vercel -> **Add New Project**.
-2.  Import the **same** repository (`cms-task`), but change the **Root Directory** to `client-site`.
-3.  **Environment Variables**:
+2.  Import the **same** repository (`cms-task`).
+3.  **[CRITICAL STEP]**: In the "Configure Project" screen, click **Edit** next to **Root Directory** and select `client-site`.
+    > ⚠️ **If you skip this, you will deploy the Admin Dashboard by mistake!**
+4.  **Environment Variables**:
     *   `NEXT_PUBLIC_SUPABASE_URL`: (Same as Admin)
     *   `NEXT_PUBLIC_SUPABASE_ANON_KEY`: (Same as Admin)
     *   `NEXT_PUBLIC_COMPANY_ID`: **[CRITICAL]** Paste the UUID for "TechCorp" from your database.
-    *   `REVALIDATION_SECRET`: `MY_SECRET_TOKEN` (Must match what the Admin sends).
-4.  Click **Deploy**.
+    *   `REVALIDATION_SECRET`: `super_secure_token_123` (Must match what the Admin sends).
+5.  Click **Deploy**.
 5.  **Domain**: Assign a custom domain (e.g., `techcorp.com`) in Vercel settings.
 
 ### Example: Deploying "FoodBlog"

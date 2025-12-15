@@ -1,3 +1,4 @@
+// src/app/api/external/posts/route.ts
 import { supabase } from '@/lib/supabase';
 import { NextRequest, NextResponse } from 'next/server';
 

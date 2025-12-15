@@ -1,5 +1,7 @@
+// client-site/src/app/page.tsx
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
+import RealtimePostsListener from '@/components/RealtimePostsListener';
 
 export const revalidate = 0; // Ensure this page is always fresh for testing
 
@@ -12,6 +14,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <RealtimePostsListener />
       <div className="max-w-3xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Latest Blog Posts</h1>
 

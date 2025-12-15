@@ -1,3 +1,4 @@
+// client-site/src/app/blog/[slug]/page.tsx
 import { supabase } from '@/lib/supabase';
 import { Post } from '@/types';
 import { notFound } from 'next/navigation';

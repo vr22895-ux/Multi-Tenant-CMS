@@ -43,3 +43,6 @@ next-env.d.ts
 # guides
 DEPLOYMENT_GUIDE.md
 INTERVIEW_GUIDE.md
+
+# public_html
+/client-site/public_html

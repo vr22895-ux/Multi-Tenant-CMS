@@ -1,0 +1,15 @@
+# Turn on the rewrite engine
+RewriteEngine On
+
+# Force HTTPS and WWW
+RewriteCond %{HTTP_HOST} !^www\.(.*)$ [OR,NC]
+RewriteCond %{https} off  
+RewriteRule ^(.*)$ https://www.metalministry.in/$1 [R=301,L]
+Redirect 301 "/enquiry-3.html" "/contact-us.html"
+
+# php -- BEGIN cPanel-generated handler, do not edit
+# Set the “ea-php81” package as the default “PHP” programming language.
+<IfModule mime_module>
+  AddHandler application/x-httpd-ea-php81___lsphp .php .php8 .phtml
+</IfModule>
+# php -- END cPanel-generated handler, do not edit

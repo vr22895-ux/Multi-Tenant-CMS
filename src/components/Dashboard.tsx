@@ -13,6 +13,7 @@ export default function Dashboard() {
     const [title, setTitle] = useState('');
     const [slug, setSlug] = useState('');
     const [content, setContent] = useState('');
+    const [type, setType] = useState<'product' | 'blog'>('product');
 
     // Company State
     const [showCompanyForm, setShowCompanyForm] = useState(false);
@@ -66,6 +67,7 @@ export default function Dashboard() {
             slug,
             content,
             company_id: selectedCompanyId,
+            type
         };
 
         const result = await createPost(postData);
@@ -76,6 +78,7 @@ export default function Dashboard() {
             setTitle('');
             setSlug('');
             setContent('');
+            setType('product');
         } else {
             setMessage({ type: 'error', text: result.error || 'Failed to create post' });
         }
@@ -205,27 +208,51 @@ export default function Dashboard() {
 
                             <div className="p-8">
                                 <form onSubmit={handleSubmit} className="space-y-8">
-                                    {/* Company Selector */}
-                                    <div className="space-y-2">
-                                        <label className="block text-sm font-semibold text-gray-700">
-                                            Target Audience (Company)
-                                        </label>
-                                        <div className="relative">
-                                            <select
-                                                value={selectedCompanyId}
-                                                onChange={(e) => setSelectedCompanyId(e.target.value)}
-                                                className="block w-full pl-4 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg shadow-sm transition-all appearance-none bg-gray-50 hover:bg-white"
-                                                required
-                                            >
-                                                <option value="">Select a company to publish to...</option>
-                                                {companies.map((company) => (
-                                                    <option key={company.id} value={company.id}>
-                                                        {company.name} ({company.domain})
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-                                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        {/* Company Selector */}
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-semibold text-gray-700">
+                                                Target Audience (Company)
+                                            </label>
+                                            <div className="relative">
+                                                <select
+                                                    value={selectedCompanyId}
+                                                    onChange={(e) => setSelectedCompanyId(e.target.value)}
+                                                    className="block w-full pl-4 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg shadow-sm transition-all appearance-none bg-gray-50 hover:bg-white"
+                                                    required
+                                                >
+                                                    <option value="">Select a company...</option>
+                                                    {companies.map((company) => (
+                                                        <option key={company.id} value={company.id}>
+                                                            {company.name} ({company.domain})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Type Selector */}
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-semibold text-gray-700">
+                                                Content Type
+                                            </label>
+                                            <div className="relative">
+                                                <select
+                                                    value={type}
+                                                    onChange={(e) => setType(e.target.value as 'product' | 'blog')}
+                                                    className="block w-full pl-4 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg shadow-sm transition-all appearance-none bg-gray-50 hover:bg-white"
+                                                    required
+                                                >
+                                                    <option value="product">📦 Product</option>
+                                                    <option value="blog">📝 Blog Post</option>
+                                                </select>
+                                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -251,7 +278,7 @@ export default function Dashboard() {
                                             </label>
                                             <div className="flex rounded-lg shadow-sm">
                                                 <span className="inline-flex items-center px-4 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                                                    /blog/
+                                                    {type === 'blog' ? '/blog/' : '/products/'}
                                                 </span>
                                                 <input
                                                     type="text"

@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# debug
+debug-db.js
+debug-fasteners.js
+debug-final-check.js
+debug-slugs.js
+find-flanges.js
+generate-image-map.js

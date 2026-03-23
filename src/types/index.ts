@@ -20,4 +20,6 @@ export interface Post {
     canonical_url?: string | null;
 }
 
-export type CreatePostInput = Omit<Post, 'id' | 'published_at'>;
+export type CreatePostInput = Omit<Post, 'id' | 'published_at' | 'company_id'> & {
+    company_ids: string[];
+};

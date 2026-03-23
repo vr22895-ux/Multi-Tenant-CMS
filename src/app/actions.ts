@@ -4,6 +4,9 @@
 import { supabase } from '@/lib/supabase';
 import { Company, CreatePostInput } from '@/types';
 import { revalidatePath } from 'next/cache';
+import { parse } from 'papaparse';
+import * as mammoth from 'mammoth';
+const pdfParse = require('pdf-parse');
 
 export async function getCompanies(): Promise<Company[]> {
     const { data, error } = await supabase
@@ -19,13 +22,44 @@ export async function getCompanies(): Promise<Company[]> {
     return data || [];
 }
 
-export async function createPost(postData: CreatePostInput) {
-    // 1. Save to Database
+export async function getPosts(): Promise<any[]> {
+    const { data: companiesData } = await supabase.from('companies').select('id, name, domain');
+    const companyMap = new Map();
+    if (companiesData) {
+        companiesData.forEach((c: any) => companyMap.set(c.id, c));
+    }
+
     const { data, error } = await supabase
         .from('post')
-        .insert([postData])
-        .select()
-        .single();
+        .select(`id, title, slug, type, published_at, company_id`)
+        .order('published_at', { ascending: false })
+        .limit(20);
+        
+    if (error) {
+        console.error('Error fetching posts:', error);
+        return [];
+    }
+    
+    return data.map((post: any) => ({
+        ...post,
+        company: companyMap.get(post.company_id) || null
+    }));
+}
+
+export async function createPost(postData: CreatePostInput) {
+    // 1. Save to Database (Multiple Inserts)
+    const inserts = postData.company_ids.map(id => ({
+        title: postData.title,
+        slug: postData.slug,
+        content: postData.content,
+        type: postData.type,
+        company_id: id
+    }));
+
+    const { data, error } = await supabase
+        .from('post')
+        .insert(inserts)
+        .select();
 
     if (error) {
         console.error('Error creating post:', error);
@@ -33,29 +67,27 @@ export async function createPost(postData: CreatePostInput) {
     }
 
     // 2. Trigger "Push" (Revalidation)
-    // We need to fetch the company domain to know where to push
-    const { data: company } = await supabase
+    // Fetch all relevant company domains
+    const { data: companies } = await supabase
         .from('companies')
-        .select('domain')
-        .eq('id', postData.company_id)
-        .single();
+        .select('id, domain')
+        .in('id', postData.company_ids);
 
-    if (company) {
-        try {
-            // In a real scenario, we would use a secret key here 
-            const revalidateUrl = `https://${company.domain}/api/revalidate?slug=${postData.slug}&secret=${process.env.REVALIDATION_SECRET}`;
-
-            // We don't await this strictly to avoid blocking the UI if the remote site is slow,
-            // but for an admin dashboard, it's often better to await to confirm it worked.
-            // For now, we'll just log it as we don't have the real sites yet.
-            console.log(`[Mock Push] Triggering revalidation on: ${revalidateUrl}`);
-
-            // await fetch(revalidateUrl); 
-        } catch (err) {
-            console.error('Failed to trigger revalidation:', err);
-            // We don't fail the whole request just because revalidation failed, 
-            // but we should warn the user.
-            return { success: true, data, warning: 'Post saved but failed to push to live site.' };
+    if (companies && companies.length > 0) {
+        let warningMessage = '';
+        for (const company of companies) {
+            try {
+                // In a real scenario, we would use a secret key here 
+                const revalidateUrl = `https://${company.domain}/api/revalidate?slug=${postData.slug}&secret=${process.env.REVALIDATION_SECRET}`;
+                console.log(`[Mock Push] Triggering revalidation on: ${revalidateUrl}`);
+                // await fetch(revalidateUrl); 
+            } catch (err) {
+                console.error(`Failed to trigger revalidation for ${company.domain}:`, err);
+                warningMessage = 'Some revalidations failed.';
+            }
+        }
+        if (warningMessage) {
+            return { success: true, data, warning: warningMessage };
         }
     }
 
@@ -80,4 +112,38 @@ export async function createCompany(name: string, domain: string) {
 
     revalidatePath('/');
     return { success: true, data };
+}
+
+export async function parseUploadedFile(formData: FormData) {
+    try {
+        const file = formData.get('file') as File | null;
+        if (!file) return { success: false, error: 'No file provided' };
+
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const filename = file.name.toLowerCase();
+
+        let extractedText = '';
+
+        if (filename.endsWith('.csv')) {
+            const text = buffer.toString('utf-8');
+            const result = parse(text, { header: true, skipEmptyLines: true });
+            return { success: true, isCsv: true, data: result.data as any[] };
+        } else if (filename.endsWith('.docx')) {
+            const result = await mammoth.convertToHtml({ buffer });
+            extractedText = result.value;
+        } else if (filename.endsWith('.txt')) {
+            extractedText = buffer.toString('utf-8');
+        } else {
+            return { success: false, error: 'Unsupported file type.' };
+        }
+
+        // Auto-extract a title if we just have text (first line usually)
+        const lines = extractedText.split('\n').filter(l => l.trim().length > 0);
+        const title = lines.length > 0 ? lines[0].substring(0, 100).trim() : 'Document Extract';
+
+        return { success: true, isCsv: false, data: [{ title, content: extractedText }] };
+    } catch (err: any) {
+        console.error('Parse error:', err);
+        return { success: false, error: err.message };
+    }
 }

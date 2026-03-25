@@ -6,7 +6,7 @@ import { Company, CreatePostInput } from '@/types';
 import { revalidatePath } from 'next/cache';
 import { parse } from 'papaparse';
 import * as mammoth from 'mammoth';
-const pdfParse = require('pdf-parse');
+
 
 export async function getCompanies(): Promise<Company[]> {
     const { data, error } = await supabase

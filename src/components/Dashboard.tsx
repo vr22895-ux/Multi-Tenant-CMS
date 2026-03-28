@@ -120,8 +120,11 @@ export default function Dashboard() {
                 // If CSV with multiple rows, we could either automatically bulk post or load the first one.
                 // For simplicity in this UI, we bulk submit them instantly, or just load the first.
                 // Let's implement batch processing right here!
-                if (selectedCompanyIds.length === 0) {
-                     setMessage({ type: 'error', text: 'Please select target companies first before uploading a CSV batch.' });
+                // Check if any row has a company/domain mapping
+                const hasMappingColumns = result.data.some((row: any) => row.company || row.domain);
+                
+                if (selectedCompanyIds.length === 0 && !hasMappingColumns) {
+                     setMessage({ type: 'error', text: 'Please select target companies or include a "company" column in your CSV.' });
                      setLoading(false);
                      return;
                 }
@@ -129,16 +132,33 @@ export default function Dashboard() {
                 let successCount = 0;
                 for (const row of result.data) {
                     if (!row.title && !row.content) continue;
+                    
+                    // Determine which companies to target for this row
+                    let targetCompanyIds = selectedCompanyIds;
+                    const rowMappedValue = (row.company || row.domain || '').toString().trim();
+                    
+                    if (rowMappedValue) {
+                        const matchedCompany = companies.find(c => 
+                            c.name.toLowerCase() === rowMappedValue.toLowerCase() || 
+                            c.domain.toLowerCase() === rowMappedValue.toLowerCase()
+                        );
+                        if (matchedCompany) {
+                            targetCompanyIds = [matchedCompany.id];
+                        }
+                    }
+
+                    if (targetCompanyIds.length === 0) continue;
+
                     await createPost({
                         title: row.title || 'Untitled Batch Post',
                         slug: (row.title || 'batch-post').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Date.now(),
                         content: row.content || '',
-                        company_ids: selectedCompanyIds,
+                        company_ids: targetCompanyIds,
                         type: 'blog'
                     });
                     successCount++;
                 }
-                setMessage({ type: 'success', text: `Successfully batch posted ${successCount} articles from CSV!` });
+                setMessage({ type: 'success', text: `Successfully batch posted ${successCount} articles! (Targeted mapping used where available)` });
             } else {
                 // Single document (PDF/Word), populate the editor
                 setTitle(result.data[0].title);

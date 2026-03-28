@@ -29,7 +29,7 @@ export default function Dashboard() {
     const [title, setTitle] = useState('');
     const [slug, setSlug] = useState('');
     const [content, setContent] = useState('');
-    const [type, setType] = useState<'product' | 'blog'>('product');
+    const [type, setType] = useState<'product' | 'blog'>('blog');
 
     // Company State
     const [showCompanyForm, setShowCompanyForm] = useState(false);
@@ -131,19 +131,19 @@ export default function Dashboard() {
 
         if (result.success && result.data && result.data.length > 0) {
             let successCount = 0;
-            
+
             // Process all items in result.data (could be 1 or many)
             for (const row of result.data) {
                 if (!row.title && !row.content) continue;
-                
+
                 // Determine which companies to target for this row
                 // Mapping Priority: 1. CSV/Word mapping -> 2. Manual selection -> 3. Error
                 let targetCompanyIds = selectedCompanyIds;
                 const rowMappedValue = (row.company || row.domain || '').toString().trim();
-                
+
                 if (rowMappedValue) {
-                    const matchedCompany = companies.find(c => 
-                        c.name.toLowerCase() === rowMappedValue.toLowerCase() || 
+                    const matchedCompany = companies.find(c =>
+                        c.name.toLowerCase() === rowMappedValue.toLowerCase() ||
                         c.domain.toLowerCase() === rowMappedValue.toLowerCase()
                     );
                     if (matchedCompany) {
@@ -169,13 +169,13 @@ export default function Dashboard() {
                     successCount++;
                 }
             }
-            
+
             if (successCount === 0 && result.data.length > 0) {
-                 setMessage({ type: 'error', text: 'Failed to post blogs. Ensure you selected a company or the file includes company mapping.' });
+                setMessage({ type: 'error', text: 'Failed to post blogs. Ensure you selected a company or the file includes company mapping.' });
             } else {
-                 setMessage({ type: 'success', text: `Successfully published ${successCount} article(s)!` });
-                 // If it was just one blog and we are NOT doing bulk CSV, maybe populate the editor too?
-                 // But user wants "multiple blogs to be posted", so jumping to bulk is better.
+                setMessage({ type: 'success', text: `Successfully published ${successCount} article(s)!` });
+                // If it was just one blog and we are NOT doing bulk CSV, maybe populate the editor too?
+                // But user wants "multiple blogs to be posted", so jumping to bulk is better.
             }
             refreshData();
         } else {
@@ -317,15 +317,15 @@ export default function Dashboard() {
                                                 Target Audience (Companies)
                                             </label>
                                             <div className="relative">
-                                                <div 
+                                                <div
                                                     className="appearance-none flex justify-between items-center w-full px-4 py-3 pr-4 rounded-lg shadow-sm border border-gray-300 hover:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white sm:text-sm font-medium text-gray-700 cursor-pointer transition-all"
                                                     onClick={() => setIsCompanyDropdownOpen(!isCompanyDropdownOpen)}
                                                 >
                                                     <span className="truncate pr-4">
-                                                        {selectedCompanyIds.length === 0 
-                                                            ? 'Select a company...' 
-                                                            : selectedCompanyIds.length === companies.length 
-                                                                ? 'All Companies Selected' 
+                                                        {selectedCompanyIds.length === 0
+                                                            ? 'Select a company...'
+                                                            : selectedCompanyIds.length === companies.length
+                                                                ? 'All Companies Selected'
                                                                 : `${selectedCompanyIds.length} companies selected`}
                                                     </span>
                                                     <div className="pointer-events-none flex items-center text-gray-500 shrink-0">
@@ -339,9 +339,9 @@ export default function Dashboard() {
                                                         <div className="p-2 border-b border-gray-100 bg-white">
                                                             <div className="relative">
                                                                 <svg className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                                                                <input 
-                                                                    type="text" 
-                                                                    placeholder="Search companies..." 
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder="Search companies..."
                                                                     className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 text-gray-800"
                                                                     value={companySearch}
                                                                     onChange={(e) => setCompanySearch(e.target.value)}
@@ -350,12 +350,12 @@ export default function Dashboard() {
                                                         </div>
                                                         <div className="p-2 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                                                             <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider pl-2">Companies</span>
-                                                            <button 
-                                                                type="button" 
+                                                            <button
+                                                                type="button"
                                                                 onClick={() => {
                                                                     const displayedCompanies = companies.filter(c => c.name.toLowerCase().includes(companySearch.toLowerCase()) || c.domain.toLowerCase().includes(companySearch.toLowerCase()));
                                                                     const allDisplayedSelected = displayedCompanies.every(c => selectedCompanyIds.includes(c.id)) && displayedCompanies.length > 0;
-                                                                    
+
                                                                     if (allDisplayedSelected) {
                                                                         // Deselect displayed
                                                                         setSelectedCompanyIds(selectedCompanyIds.filter(id => !displayedCompanies.find(c => c.id === id)));
@@ -367,7 +367,7 @@ export default function Dashboard() {
                                                                         });
                                                                         setSelectedCompanyIds(newSelects);
                                                                     }
-                                                                }} 
+                                                                }}
                                                                 className="text-xs text-blue-600 hover:text-blue-800 font-bold tracking-wide cursor-pointer px-2 py-1 rounded hover:bg-blue-50 transition-colors"
                                                             >
                                                                 Select All (Filtered)
@@ -377,8 +377,8 @@ export default function Dashboard() {
                                                             {companies.length === 0 ? (
                                                                 <div className="p-4 text-sm text-gray-500 text-center">No companies registered yet.</div>
                                                             ) : (
-                                                                companies.filter(company => 
-                                                                    company.name.toLowerCase().includes(companySearch.toLowerCase()) || 
+                                                                companies.filter(company =>
+                                                                    company.name.toLowerCase().includes(companySearch.toLowerCase()) ||
                                                                     company.domain.toLowerCase().includes(companySearch.toLowerCase())
                                                                 ).map((company) => (
                                                                     <label key={company.id} className="flex items-center px-4 py-3 cursor-pointer hover:bg-blue-50 transition-colors m-0">
@@ -415,12 +415,12 @@ export default function Dashboard() {
                                             <div className="relative">
                                                 <select
                                                     value={type}
-                                                    onChange={(e) => setType(e.target.value as 'product' | 'blog')}
+                                                    onChange={(e) => setType(e.target.value as 'blog' | 'product')}
                                                     className="block w-full pl-4 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg shadow-sm transition-all appearance-none bg-gray-50 hover:bg-white"
                                                     required
                                                 >
-                                                    <option value="product">📦 Product</option>
                                                     <option value="blog">📝 Blog Post</option>
+                                                    <option value="product">📦 Product</option>
                                                 </select>
                                                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
                                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -453,12 +453,12 @@ export default function Dashboard() {
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                                                         Upload Word, CSV
                                                     </span>
-                                                    <input 
-                                                        type="file" 
+                                                    <input
+                                                        type="file"
                                                         ref={fileInputRef}
-                                                        className="hidden" 
+                                                        className="hidden"
                                                         accept=".csv,.docx,.txt"
-                                                        onChange={handleFileUpload} 
+                                                        onChange={handleFileUpload}
                                                     />
                                                 </label>
                                                 <div className="mt-2 flex flex-col gap-1">
@@ -499,9 +499,9 @@ export default function Dashboard() {
                                         <label className="block text-sm font-semibold text-gray-700">
                                             Content
                                         </label>
-                                        <RichTextEditor 
-                                            content={content} 
-                                            onChange={(newContent) => setContent(newContent)} 
+                                        <RichTextEditor
+                                            content={content}
+                                            onChange={(newContent) => setContent(newContent)}
                                         />
                                     </div>
 
@@ -571,7 +571,7 @@ export default function Dashboard() {
                                                 <span className="font-semibold text-gray-900 line-clamp-2 text-sm" title={post.title}>{post.title}</span>
                                                 <div className="flex items-center gap-2 shrink-0">
                                                     {post.type === 'blog' && (
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleDeletePost(post.id, post.title)}
                                                             className="p-1 text-gray-700 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                                                             title="Delete Blog"
